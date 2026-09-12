@@ -15,7 +15,7 @@ public: // выдача объекту параметров и проверка 
 	virtual ~Entity() = default;
 	virtual void takeDamage(int damage) {
 		health -= damage;
-		if (health < 0) {
+		if (damage <= 0) {
 			health = 0; 
 		}
 	}
