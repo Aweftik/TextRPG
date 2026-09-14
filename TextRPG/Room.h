@@ -1,36 +1,51 @@
 #pragma once
+
 #include <string>
 #include <memory>
 #include <unordered_map>
 #include "Enemy.h"
 
+// Перечисление для направлений движения в подземелье
 enum class Direction {
-	North,
-	South,
-	East,
-	West
+    North,
+    South,
+    East,
+    West
 };
 
 class Room {
-private: 
-	std::string description; 
-	// Враг в комнате (уникальное владение — комната владеет врагом)
-	std::unique_ptr<Enemy> enemy; 
-	// Связи с другими комнатами
-	// Используем shared_ptr для перехода между локациями
-	std::unordered_map<Direction, std::shared_ptr<Room>> exits; 
+private:
+    std::string description;
+    std::unique_ptr<Enemy> enemy;
 
-public: 
-	// Связывание комнат
-	explicit Room(const std::string& description); 
-	void setExit(Direction dir, std::shared_ptr<Room> neighbor); 
-	std::shared_ptr<Room> getExit(Direction dir) const; 
-	// Работа с врагом
-	void setEnemy(std::unique_ptr<Enemy> newEnemy); 
+    // Графовая структура: связи с соседами через smart pointers
+    std::unordered_map<Direction, std::shared_ptr<Room>> exits;
 
-	Enemy* getEnemy() const; // Возвращаем сырой указатель для чтения, не передавая владение 
-	bool hasEnemy() const; 
-	void ClearEnemy(); // Вызывается после победы над врагом
+    // Механика ловушек
+    bool hasActiveTrap;
+    int trapDamage;
 
-	std::string getDescription() const;
+public:
+    // Конструктор (только объявление)
+    explicit Room(const std::string& description);
+
+    // Деструктор по умолчанию
+    ~Room() = default;
+
+    // --- Управление описанием и выходами ---
+    std::string getDescription() const;
+    std::string getAvailableExits() const;
+    std::shared_ptr<Room> getExit(Direction dir) const;
+    void setExit(Direction dir, std::shared_ptr<Room> room);
+
+    // --- Управление врагом ---
+    bool hasEnemy() const;
+    Enemy* getEnemy() const;
+    void setEnemy(std::unique_ptr<Enemy> newEnemy);
+    void clearEnemy(); // Вместо clearEnemy()
+
+    // --- Управление ловушками ---
+    void setTrap(int damage);
+    bool checkTrap() const;
+    void triggerTrap();
 };
